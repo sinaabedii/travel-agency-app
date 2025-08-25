@@ -6,18 +6,28 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/context/ThemeContext';
-import { Card, Button } from '@/components/design-system';
-import { Booking, BookingStatus } from '@/types';
+import { Card, Button, Input } from '@/components/design-system';
+import { Booking, BookingStatus, PaymentStatus } from '@/types';
+import { validateCreditCard, validateExpiryDate, validateCVV, validateName } from '@/utils/validation';
 
 const BookingsScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
   const [refreshing, setRefreshing] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Mock bookings data
   const mockBookings: Booking[] = [
@@ -39,7 +49,7 @@ const BookingsScreen: React.FC = () => {
       ],
       totalAmount: 2850,
       currency: 'USD',
-      paymentStatus: 'paid' as any,
+      paymentStatus: PaymentStatus.PAID,
       createdAt: '2024-02-01T00:00:00Z',
       updatedAt: '2024-02-01T00:00:00Z',
       tour: {
@@ -71,7 +81,7 @@ const BookingsScreen: React.FC = () => {
       ],
       totalAmount: 1850,
       currency: 'USD',
-      paymentStatus: 'pending' as any,
+      paymentStatus: PaymentStatus.PENDING,
       createdAt: '2024-02-10T00:00:00Z',
       updatedAt: '2024-02-10T00:00:00Z',
       tour: {
@@ -95,7 +105,7 @@ const BookingsScreen: React.FC = () => {
     setRefreshing(true);
     try {
       // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
       setBookings(mockBookings);
     } catch (error) {
       console.error('Error loading bookings:', error);
@@ -107,7 +117,7 @@ const BookingsScreen: React.FC = () => {
   const getFilteredBookings = () => {
     const now = new Date();
     return bookings.filter(booking => {
-      const tourStartDate = new Date(booking.tour.startDate);
+      const tourStartDate = new Date((booking.tour as any).startDate);
       
       switch (activeTab) {
         case 'upcoming':
@@ -162,13 +172,128 @@ const BookingsScreen: React.FC = () => {
   };
 
   const handleBookingPress = (booking: Booking) => {
-    navigation.navigate('BookingDetails' as never, { bookingId: booking.id } as never);
+    navigation.navigate('BookingDetails', { bookingId: booking.id });
   };
 
   const handlePayNow = (booking: Booking) => {
-    // Navigate to payment screen
-    console.log('Pay now for booking:', booking.id);
+    setSelectedBooking(booking);
+    setShowPaymentModal(true);
   };
+
+  const resetPaymentForm = () => {
+    setCardName('');
+    setCardNumber('');
+    setExpiry('');
+    setCvv('');
+    setPaymentError(null);
+    setProcessing(false);
+  };
+
+  const closePaymentModal = () => {
+    setShowPaymentModal(false);
+    setSelectedBooking(null);
+    resetPaymentForm();
+  };
+
+  const submitPayment = async () => {
+    setPaymentError(null);
+    // Basic validations
+    if (!validateName(cardName)) {
+      setPaymentError('Please enter the cardholder name (letters and spaces only).');
+      return;
+    }
+    if (!validateCreditCard(cardNumber)) {
+      setPaymentError('Please enter a valid card number.');
+      return;
+    }
+    if (!validateExpiryDate(expiry)) {
+      setPaymentError('Expiry must be in MM/YY format and not in the past.');
+      return;
+    }
+    if (!validateCVV(cvv)) {
+      setPaymentError('Please enter a valid CVV (3 or 4 digits).');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      // Mock payment processing delay
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 1500));
+      if (!selectedBooking) return;
+
+      // Update local state to reflect payment success
+      setBookings(prev => prev.map(b =>
+        b.id === selectedBooking.id
+          ? { ...b, status: BookingStatus.CONFIRMED, paymentStatus: PaymentStatus.PAID }
+          : b
+      ));
+
+      closePaymentModal();
+    } catch (e) {
+      setPaymentError('Payment failed. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const renderPaymentModal = () => (
+    <Modal visible={showPaymentModal} animationType="slide" presentationStyle="pageSheet">
+      <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}> 
+        <View style={styles.modalHeader}>
+          <TouchableOpacity onPress={closePaymentModal}>
+            <Text style={[styles.modalButton, { color: theme.colors.textSecondary }]}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Payment Details</Text>
+          <View style={{ width: 60 }} />
+        </View>
+
+        <View style={{ paddingHorizontal: 20, paddingTop: 8 }}>
+          {selectedBooking && (
+            <Text style={{ marginBottom: 12, color: theme.colors.textSecondary }}>
+              Paying ${selectedBooking.totalAmount.toLocaleString()} for {selectedBooking.tour.title}
+            </Text>
+          )}
+
+          <Input
+            placeholder="Cardholder Name"
+            value={cardName}
+            onChangeText={setCardName}
+            autoCapitalize="words"
+            containerStyle={{ marginBottom: 12 }}
+          />
+          <Input
+            placeholder="Card Number"
+            value={cardNumber}
+            onChangeText={setCardNumber}
+            keyboardType="number-pad"
+            containerStyle={{ marginBottom: 12 }}
+          />
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Input
+              placeholder="MM/YY"
+              value={expiry}
+              onChangeText={setExpiry}
+              keyboardType="number-pad"
+              containerStyle={{ flex: 1, marginBottom: 12 }}
+            />
+            <Input
+              placeholder="CVV"
+              value={cvv}
+              onChangeText={setCvv}
+              keyboardType="number-pad"
+              containerStyle={{ flex: 1, marginBottom: 12 }}
+            />
+          </View>
+
+          {paymentError ? (
+            <Text style={{ color: theme.colors.error, marginBottom: 12 }}>{paymentError}</Text>
+          ) : null}
+
+          <Button title={processing ? 'Processing…' : 'Pay Now'} onPress={submitPayment} disabled={processing} fullWidth size="large" />
+        </View>
+      </View>
+    </Modal>
+  );
 
   const handleCancelBooking = (booking: Booking) => {
     // Show cancel confirmation
@@ -202,8 +327,8 @@ const BookingsScreen: React.FC = () => {
           <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>
             Dates
           </Text>
-          <Text style={[styles.detailValue, { color: theme.colors.text }]}>
-            {formatDate(item.tour.startDate)} - {formatDate(item.tour.endDate)}
+          <Text style={[styles.detailValue, { color: theme.colors.text }]}> 
+            {formatDate((item.tour as any).startDate)} - {formatDate((item.tour as any).endDate)}
           </Text>
         </View>
         
@@ -270,7 +395,7 @@ const BookingsScreen: React.FC = () => {
       {activeTab === 'upcoming' && (
         <Button
           title="Explore Tours"
-          onPress={() => navigation.navigate('Search' as never)}
+          onPress={() => navigation.navigate('Search')}
           style={styles.exploreButton}
         />
       )}
@@ -322,6 +447,7 @@ const BookingsScreen: React.FC = () => {
         }
         ListEmptyComponent={renderEmptyState}
       />
+      {renderPaymentModal()}
     </View>
   );
 };
@@ -329,6 +455,29 @@ const BookingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalButton: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Instrument Sans',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Instrument Sans',
   },
   header: {
     paddingHorizontal: 20,

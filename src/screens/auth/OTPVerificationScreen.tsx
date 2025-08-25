@@ -20,7 +20,7 @@ interface RouteParams {
 }
 
 const OTPVerificationScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute();
   const { theme } = useTheme();
   const { email, type } = route.params as RouteParams;
@@ -75,7 +75,7 @@ const OTPVerificationScreen: React.FC = () => {
     setIsLoading(true);
     try {
       // Mock OTP verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 1500));
       
       if (otpString === '123456') {
         if (type === 'register') {
@@ -88,11 +88,11 @@ const OTPVerificationScreen: React.FC = () => {
             lastName: 'User',
             role: 'user'
           }));
-          navigation.navigate('Main' as never);
+          navigation.navigate('Main');
         } else {
           // Navigate to reset password screen (would be implemented)
           Alert.alert('Success', 'OTP verified! You can now reset your password.');
-          navigation.navigate('Login' as never);
+          navigation.navigate('Login');
         }
       } else {
         Alert.alert('Invalid OTP', 'The verification code you entered is incorrect');
@@ -111,7 +111,7 @@ const OTPVerificationScreen: React.FC = () => {
     
     try {
       // Mock resend OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
       Alert.alert('Code Sent', 'A new verification code has been sent to your email');
     } catch (error) {
       Alert.alert('Error', 'Failed to resend code. Please try again.');

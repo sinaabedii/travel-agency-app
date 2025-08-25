@@ -18,7 +18,7 @@ import { getFeaturedTours, getPopularDestinations, mockUsers } from '@/services/
 const { width } = Dimensions.get('window');
 
 const HomeScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const [featuredTours, setFeaturedTours] = useState<Tour[]>([]);
   const [popularDestinations, setPopularDestinations] = useState<Destination[]>([]);
@@ -53,14 +53,14 @@ const HomeScreen: React.FC = () => {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      navigation.navigate('Search' as never, { query: searchQuery } as never);
+      navigation.navigate('Search', { query: searchQuery });
     } else {
-      navigation.navigate('Search' as never);
+      navigation.navigate('Search');
     }
   };
 
   const handleTourPress = (tourId: string) => {
-    navigation.navigate('TourDetails' as never, { tourId } as never);
+    navigation.navigate('TourDetails', { tourId });
   };
 
   const handleFavoritePress = (tourId: string) => {
@@ -72,7 +72,7 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleDestinationPress = (destinationId: string) => {
-    navigation.navigate('DestinationDetails' as never, { destinationId } as never);
+    navigation.navigate('DestinationDetails', { destinationId });
   };
 
   const renderDestinationCard = ({ item }: { item: Destination }) => (
@@ -96,7 +96,7 @@ const HomeScreen: React.FC = () => {
     <TouchableOpacity
       key={category}
       style={[styles.categoryChip, { backgroundColor: theme.colors.surface }]}
-      onPress={() => navigation.navigate('Search' as never, { category } as never)}
+      onPress={() => navigation.navigate('Search', { category })}
     >
       <Text style={styles.categoryEmoji}>{emoji}</Text>
       <Text style={[styles.categoryText, { color: theme.colors.text }]}>
@@ -164,7 +164,7 @@ const HomeScreen: React.FC = () => {
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
               Featured Tours
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Search' as never)}>
+            <TouchableOpacity onPress={() => navigation.navigate('Search')}>
               <Text style={[styles.seeAllText, { color: theme.colors.primary }]}>
                 See all
               </Text>
@@ -220,7 +220,7 @@ const HomeScreen: React.FC = () => {
           <View style={styles.quickActionsGrid}>
             <TouchableOpacity
               style={[styles.quickActionCard, { backgroundColor: theme.colors.surface }]}
-              onPress={() => navigation.navigate('Bookings' as never)}
+              onPress={() => navigation.navigate('Bookings')}
             >
               <Text style={styles.quickActionIcon}>📅</Text>
               <Text style={[styles.quickActionText, { color: theme.colors.text }]}>
@@ -230,7 +230,7 @@ const HomeScreen: React.FC = () => {
             
             <TouchableOpacity
               style={[styles.quickActionCard, { backgroundColor: theme.colors.surface }]}
-              onPress={() => navigation.navigate('Chat' as never)}
+              onPress={() => navigation.navigate('Chat')}
             >
               <Text style={styles.quickActionIcon}>💬</Text>
               <Text style={[styles.quickActionText, { color: theme.colors.text }]}>

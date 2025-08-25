@@ -50,6 +50,9 @@ export interface Tour {
   reviewCount: number;
   reviews: Review[];
   availability: TourAvailability[];
+  // Optional convenience fields for UI when a selected availability is flattened onto the tour
+  startDate?: string;
+  endDate?: string;
   isActive: boolean;
   isFeatured: boolean;
   createdAt: string;
@@ -220,6 +223,9 @@ export interface ChatMessage {
   type: MessageType;
   timestamp: string;
   isRead: boolean;
+  deliveryStatus?: MessageDeliveryStatus;
+  deliveredAt?: string;
+  readAt?: string;
   attachments?: MessageAttachment[];
 }
 
@@ -228,6 +234,12 @@ export enum MessageType {
   IMAGE = 'image',
   FILE = 'file',
   SYSTEM = 'system',
+}
+
+export enum MessageDeliveryStatus {
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  READ = 'read',
 }
 
 export interface MessageAttachment {
@@ -260,6 +272,15 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Auth: undefined;
   Main: undefined;
+  TourDetails: {
+    tourId: string;
+  };
+  BookingDetails: {
+    bookingId: string;
+  };
+  DestinationDetails: {
+    destinationId: string;
+  };
 };
 
 export type AuthStackParamList = {

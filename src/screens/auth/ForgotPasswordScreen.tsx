@@ -14,7 +14,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { Button, Input } from '@/components/design-system';
 
 const ForgotPasswordScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,12 +40,12 @@ const ForgotPasswordScreen: React.FC = () => {
 
     try {
       // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 1500));
       
-      navigation.navigate('OTPVerification' as never, {
+      navigation.navigate('OTPVerification', {
         email,
         type: 'forgot_password'
-      } as never);
+      });
     } catch (error) {
       Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
@@ -54,7 +54,7 @@ const ForgotPasswordScreen: React.FC = () => {
   };
 
   const handleBackToLogin = () => {
-    navigation.navigate('Login' as never);
+    navigation.navigate('Login');
   };
 
   return (

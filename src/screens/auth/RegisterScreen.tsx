@@ -15,7 +15,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { Button, Input } from '@/components/design-system';
 
 const RegisterScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -82,13 +82,13 @@ const RegisterScreen: React.FC = () => {
     setIsLoading(true);
     try {
       // Mock registration - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 2000));
       
       // Navigate to OTP verification
-      navigation.navigate('OTPVerification' as never, {
+      navigation.navigate('OTPVerification', {
         email: formData.email,
         type: 'register'
-      } as never);
+      });
     } catch (error) {
       Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {

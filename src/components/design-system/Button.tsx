@@ -3,6 +3,7 @@ import {
   TouchableOpacity,
   Text,
   StyleSheet,
+  StyleProp,
   ViewStyle,
   TextStyle,
   ActivityIndicator,
@@ -17,8 +18,8 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
 }
@@ -123,7 +124,7 @@ export const Button: React.FC<ButtonProps> = memo(({
 
     return {
       fontFamily: theme.typography.fontFamily,
-      fontWeight: theme.typography.fontWeight.semibold,
+      fontWeight: '600',
       ...sizeStyles[size],
       ...variantStyles[variant],
     };
@@ -143,7 +144,7 @@ export const Button: React.FC<ButtonProps> = memo(({
       return (
         <>
           {iconPosition === 'left' && icon}
-          <Text style={[getTextStyle(), textStyle, icon && { marginHorizontal: theme.spacing.xs }]}>
+          <Text style={[getTextStyle(), textStyle, icon ? { marginHorizontal: theme.spacing.xs } : undefined]}>
             {title}
           </Text>
           {iconPosition === 'right' && icon}

@@ -9,6 +9,7 @@ import {
   TextStyle,
   TextInputProps,
 } from 'react-native';
+import { StyleProp } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
@@ -20,8 +21,8 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   onRightIconPress?: () => void;
   variant?: 'default' | 'filled' | 'outlined';
   size?: 'small' | 'medium' | 'large';
-  containerStyle?: ViewStyle;
-  inputStyle?: TextStyle;
+  containerStyle?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
 }
 
@@ -90,7 +91,7 @@ export const Input: React.FC<InputProps> = memo(({
     return {
       fontFamily: theme.typography.fontFamily,
       fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.medium,
+      fontWeight: '500',
       color: error ? theme.colors.error : theme.colors.text,
       marginBottom: theme.spacing.xs,
     };

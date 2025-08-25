@@ -9,16 +9,164 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import MapView, { Marker, Region } from 'react-native-maps';
+import { useNavigation, useRoute, NavigationProp } from '@react-navigation/native';
 import { useTheme } from '@/context/ThemeContext';
 import { TourCard, Input, Button } from '@/components/design-system';
-import { Tour, SearchFilters, SortOption, TourCategory, TourDifficulty } from '@/types';
+import { Tour, SearchFilters, SortOption, TourCategory, TourDifficulty, RootStackParamList } from '@/types';
 import { searchTours } from '@/services/mockData';
 
 const { width } = Dimensions.get('window');
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  backButton: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Instrument Sans',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Instrument Sans',
+  },
+  placeholder: {
+    width: 50,
+  },
+  searchSection: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  searchInput: {
+    marginBottom: 0,
+  },
+  filterBar: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  filterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Instrument Sans',
+  },
+  resultsHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  resultsCount: {
+    fontSize: 14,
+    fontFamily: 'Instrument Sans',
+  },
+  toursList: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalButton: {
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: 'Instrument Sans',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Instrument Sans',
+  },
+  modalContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  filterSection: {
+    marginBottom: 32,
+  },
+  filterTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
+    fontFamily: 'Instrument Sans',
+  },
+  sortOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sortOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  sortOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Instrument Sans',
+  },
+  rangeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  rangeInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  rangeSeparator: {
+    fontSize: 14,
+    fontFamily: 'Instrument Sans',
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Instrument Sans',
+  },
+  modalFooter: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+});
+
 const SearchScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const { theme } = useTheme();
   
@@ -28,6 +176,7 @@ const SearchScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [showMap, setShowMap] = useState(false);
   
   const [filters, setFilters] = useState<SearchFilters>({
     priceRange: { min: 0, max: 10000 },
@@ -126,7 +275,7 @@ const SearchScreen: React.FC = () => {
   }, [tours, searchQuery, filters]);
 
   const handleTourPress = (tourId: string) => {
-    navigation.navigate('TourDetails' as never, { tourId } as never);
+    navigation.navigate('TourDetails', { tourId });
   };
 
   const handleFavoritePress = (tourId: string) => {
@@ -376,44 +525,66 @@ const SearchScreen: React.FC = () => {
             style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}
             onPress={() => setShowFilters(true)}
           >
-            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-              🎛️ Filters
-            </Text>
+            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>🎛️ Filters</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}
-          >
-            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-              💰 Price
-            </Text>
+          <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}> 
+            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>💰 Price</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}
-          >
-            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-              ⭐ Rating
-            </Text>
+          <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}> 
+            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>⭐ Rating</Text>
           </TouchableOpacity>
           
+          <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}> 
+            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>📅 Duration</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.filterButton, { backgroundColor: theme.colors.surface }]}
+            onPress={() => setShowMap(prev => !prev)}
           >
-            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}>
-              📅 Duration
+            <Text style={[styles.filterButtonText, { color: theme.colors.text }]}> 
+              {showMap ? '📋 List' : '🗺️ Map'}
             </Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
 
-      {/* Results */}
-      <View style={styles.resultsHeader}>
-        <Text style={[styles.resultsCount, { color: theme.colors.textSecondary }]}>
-          {filteredTours.length} tours found
-        </Text>
-      </View>
+    {/* Results */}
+    <View style={styles.resultsHeader}>
+      <Text style={[styles.resultsCount, { color: theme.colors.textSecondary }]}> 
+        {filteredTours.length} tours found
+      </Text>
+    </View>
 
+    {showMap ? (
+      <View style={{ flex: 1, height: 400, marginHorizontal: 20, borderRadius: 12, overflow: 'hidden', marginBottom: 16 }}>
+        <MapView
+          style={{ flex: 1 }}
+          initialRegion={(() => {
+            const first = filteredTours[0];
+            const lat = first?.destination.coordinates?.latitude ?? 37.78825;
+            const lng = first?.destination.coordinates?.longitude ?? -122.4324;
+            const region: Region = { latitude: lat, longitude: lng, latitudeDelta: 30, longitudeDelta: 30 };
+            return region;
+          })()}
+        >
+          {filteredTours.map(t => (
+            <Marker
+              key={t.id}
+              coordinate={{
+                latitude: t.destination.coordinates?.latitude ?? 0,
+                longitude: t.destination.coordinates?.longitude ?? 0,
+              }}
+              title={t.title}
+              description={`${t.destination.name}, ${t.destination.country}`}
+              onPress={() => handleTourPress(t.id)}
+            />
+          ))}
+        </MapView>
+      </View>
+    ) : (
       <FlatList
         data={filteredTours}
         renderItem={renderTourItem}
@@ -423,157 +594,12 @@ const SearchScreen: React.FC = () => {
         refreshing={loading}
         onRefresh={loadTours}
       />
+    )}
 
-      {renderFilterModal()}
-    </View>
-  );
+    {renderFilterModal()}
+  </View>
+);
+
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-  },
-  backButton: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Instrument Sans',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Instrument Sans',
-  },
-  placeholder: {
-    width: 50,
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  searchInput: {
-    marginBottom: 0,
-  },
-  filterBar: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'Instrument Sans',
-  },
-  resultsHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  resultsCount: {
-    fontSize: 14,
-    fontFamily: 'Instrument Sans',
-  },
-  toursList: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  modalButton: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Instrument Sans',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Instrument Sans',
-  },
-  modalContent: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  filterSection: {
-    marginBottom: 32,
-  },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 16,
-    fontFamily: 'Instrument Sans',
-  },
-  sortOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  sortOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  sortOptionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'Instrument Sans',
-  },
-  rangeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  rangeInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  rangeSeparator: {
-    fontSize: 14,
-    fontFamily: 'Instrument Sans',
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  chipText: {
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'Instrument Sans',
-  },
-  modalFooter: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-});
 
 export default SearchScreen;

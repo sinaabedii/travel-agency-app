@@ -15,9 +15,9 @@ import { mockUsers } from '@/services/mockData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme, isDark, toggleTheme } = useTheme();
-  const [user] = useState(mockUsers[0]); // Mock current user
+  const [user] = useState(mockUsers[0]); // Current user
   const [notifications, setNotifications] = useState(user.preferences.notifications);
 
   const handleLogout = () => {
@@ -31,11 +31,10 @@ const ProfileScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem('userToken');
-              await AsyncStorage.removeItem('userData');
-              navigation.navigate('Auth' as never);
+              await AsyncStorage.multiRemove(['userToken', 'userData']);
+              navigation.navigate('Auth');
             } catch (error) {
-              console.error('Error during logout:', error);
+              console.error('Error logging out:', error);
             }
           },
         },
@@ -44,16 +43,34 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleEditProfile = () => {
-    Alert.alert('Coming Soon', 'Profile editing will be available in the next update!');
+    // Navigate to edit profile screen
+    console.log('Edit profile');
   };
 
   const handleChangePassword = () => {
-    Alert.alert('Coming Soon', 'Password change will be available in the next update!');
+    // Navigate to change password screen
+    console.log('Change password');
   };
 
-  const handleNotificationToggle = (value: boolean) => {
-    setNotifications(value);
-    // In a real app, this would update the backend
+  const handlePaymentMethods = () => {
+    // Navigate to payment methods screen
+    console.log('Payment methods');
+  };
+
+  const handleTravelPreferences = () => {
+    // Navigate to travel preferences screen
+    console.log('Travel preferences');
+  };
+
+  const handleSupport = () => {
+    navigation.navigate('Chat');
+  };
+
+  const handleAbout = () => {
+    Alert.alert(
+      'About TripGlide',
+      'TripGlide v1.0.0\n\nYour trusted travel companion for discovering amazing adventures around the world.\n\n© 2024 TripGlide. All rights reserved.'
+    );
   };
 
   const renderProfileHeader = () => (
@@ -71,10 +88,10 @@ const ProfileScreen: React.FC = () => {
           <Text style={[styles.userEmail, { color: theme.colors.textSecondary }]}>
             {user.email}
           </Text>
-          <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedIcon}>✓</Text>
-            <Text style={[styles.verifiedText, { color: theme.colors.success }]}>
-              Verified Account
+          <View style={styles.verificationBadge}>
+            <Text style={styles.verificationIcon}>✓</Text>
+            <Text style={[styles.verificationText, { color: theme.colors.success }]}>
+              Verified
             </Text>
           </View>
         </View>
@@ -140,30 +157,10 @@ const ProfileScreen: React.FC = () => {
             Account
           </Text>
           <Card padding="none">
-            {renderMenuItem(
-              '👤',
-              'Personal Information',
-              'Update your profile details',
-              handleEditProfile
-            )}
-            {renderMenuItem(
-              '🔒',
-              'Change Password',
-              'Update your password',
-              handleChangePassword
-            )}
-            {renderMenuItem(
-              '💳',
-              'Payment Methods',
-              'Manage your payment options',
-              () => Alert.alert('Coming Soon', 'Payment methods management coming soon!')
-            )}
-            {renderMenuItem(
-              '📍',
-              'Travel Preferences',
-              'Set your travel interests',
-              () => Alert.alert('Coming Soon', 'Travel preferences coming soon!')
-            )}
+            {renderMenuItem('👤', 'Edit Profile', 'Update your personal information', handleEditProfile)}
+            {renderMenuItem('🔒', 'Change Password', 'Update your password', handleChangePassword)}
+            {renderMenuItem('💳', 'Payment Methods', 'Manage your payment options', handlePaymentMethods)}
+            {renderMenuItem('🎯', 'Travel Preferences', 'Customize your travel interests', handleTravelPreferences)}
           </Card>
         </View>
 
@@ -175,12 +172,12 @@ const ProfileScreen: React.FC = () => {
           <Card padding="none">
             {renderMenuItem(
               '🔔',
-              'Push Notifications',
-              'Manage notification preferences',
+              'Notifications',
+              'Manage your notification preferences',
               undefined,
               <Switch
                 value={notifications}
-                onValueChange={handleNotificationToggle}
+                onValueChange={setNotifications}
                 trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                 thumbColor="#FFFFFF"
               />
@@ -188,7 +185,7 @@ const ProfileScreen: React.FC = () => {
             {renderMenuItem(
               '🌙',
               'Dark Mode',
-              'Toggle dark/light theme',
+              isDark ? 'Switch to light theme' : 'Switch to dark theme',
               undefined,
               <Switch
                 value={isDark}
@@ -197,18 +194,8 @@ const ProfileScreen: React.FC = () => {
                 thumbColor="#FFFFFF"
               />
             )}
-            {renderMenuItem(
-              '🌐',
-              'Language',
-              'English (US)',
-              () => Alert.alert('Coming Soon', 'Language selection coming soon!')
-            )}
-            {renderMenuItem(
-              '💱',
-              'Currency',
-              'USD - US Dollar',
-              () => Alert.alert('Coming Soon', 'Currency selection coming soon!')
-            )}
+            {renderMenuItem('🌍', 'Language', 'English', () => {})}
+            {renderMenuItem('💰', 'Currency', 'USD ($)', () => {})}
           </Card>
         </View>
 
@@ -218,50 +205,10 @@ const ProfileScreen: React.FC = () => {
             Support
           </Text>
           <Card padding="none">
-            {renderMenuItem(
-              '❓',
-              'Help Center',
-              'Get answers to common questions',
-              () => Alert.alert('Coming Soon', 'Help center coming soon!')
-            )}
-            {renderMenuItem(
-              '💬',
-              'Contact Support',
-              'Chat with our support team',
-              () => navigation.navigate('Chat' as never)
-            )}
-            {renderMenuItem(
-              '⭐',
-              'Rate Our App',
-              'Share your feedback',
-              () => Alert.alert('Thank You!', 'Thank you for using TripGlide!')
-            )}
-            {renderMenuItem(
-              '📋',
-              'Terms of Service',
-              'Read our terms and conditions',
-              () => Alert.alert('Coming Soon', 'Terms of service coming soon!')
-            )}
-            {renderMenuItem(
-              '🔒',
-              'Privacy Policy',
-              'Learn about data protection',
-              () => Alert.alert('Coming Soon', 'Privacy policy coming soon!')
-            )}
-          </Card>
-        </View>
-
-        {/* App Info */}
-        <View style={styles.section}>
-          <Card>
-            <View style={styles.appInfo}>
-              <Text style={[styles.appName, { color: theme.colors.text }]}>
-                TripGlide
-              </Text>
-              <Text style={[styles.appVersion, { color: theme.colors.textSecondary }]}>
-                Version 1.0.0
-              </Text>
-            </View>
+            {renderMenuItem('💬', 'Contact Support', 'Get help from our team', handleSupport)}
+            {renderMenuItem('📋', 'Terms of Service', 'Read our terms', () => {})}
+            {renderMenuItem('🔒', 'Privacy Policy', 'Read our privacy policy', () => {})}
+            {renderMenuItem('ℹ️', 'About', 'App version and info', handleAbout)}
           </Card>
         </View>
 
@@ -277,6 +224,7 @@ const ProfileScreen: React.FC = () => {
           />
         </View>
 
+        {/* Bottom Spacing */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
     </View>
@@ -324,7 +272,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 4,
     fontFamily: 'Instrument Sans',
@@ -334,16 +282,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Instrument Sans',
   },
-  verifiedBadge: {
+  verificationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  verifiedIcon: {
+  verificationIcon: {
     fontSize: 12,
     marginRight: 4,
-    color: '#10B981',
   },
-  verifiedText: {
+  verificationText: {
     fontSize: 12,
     fontWeight: '500',
     fontFamily: 'Instrument Sans',
@@ -358,7 +305,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
     marginHorizontal: 20,
@@ -366,8 +313,8 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -389,30 +336,16 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 16,
     fontWeight: '500',
-    marginBottom: 2,
     fontFamily: 'Instrument Sans',
   },
   menuSubtitle: {
     fontSize: 14,
+    marginTop: 2,
     fontFamily: 'Instrument Sans',
   },
   menuArrow: {
     fontSize: 16,
-    fontWeight: '500',
-  },
-  appInfo: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  appName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-    fontFamily: 'Instrument Sans',
-  },
-  appVersion: {
-    fontSize: 14,
-    fontFamily: 'Instrument Sans',
+    marginLeft: 12,
   },
   logoutButton: {
     marginHorizontal: 20,

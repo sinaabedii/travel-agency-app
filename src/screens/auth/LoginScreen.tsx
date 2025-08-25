@@ -15,7 +15,7 @@ import { Button, Input } from '@/components/design-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,7 +48,7 @@ const LoginScreen: React.FC = () => {
     setIsLoading(true);
     try {
       // Mock login - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 1500));
       
       // Mock successful login
       if (email === 'vanessa@example.com' && password === 'password123') {

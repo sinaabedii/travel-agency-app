@@ -25,9 +25,10 @@
       "@navigation/*": ["navigation/*"],
       "@hooks/*": ["hooks/*"],
       "@context/*": ["context/*"]
-    }
+    },
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*", "index.js"],
+  "include": ["src/**/*", "index.js", "**/*.d.ts"],
   "exclude": [
     "node_modules",
     "babel.config.js",

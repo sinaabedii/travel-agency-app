@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -17,6 +18,7 @@ import SearchScreen from '@/screens/main/SearchScreen';
 import BookingsScreen from '@/screens/main/BookingsScreen';
 import ChatScreen from '@/screens/main/ChatScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
+import TourDetailsScreen from '@/screens/main/TourDetailsScreen';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -69,7 +71,7 @@ const MainNavigator = () => {
         tabBarLabelStyle: {
           fontSize: theme.typography.fontSize.xs,
           fontFamily: theme.typography.fontFamily,
-          fontWeight: theme.typography.fontWeight.medium,
+          fontWeight: '500',
         },
       }}
     >
@@ -133,9 +135,9 @@ const TabIcon: React.FC<{ name: string; color: string; size: number }> = ({ name
   };
 
   return (
-    <span style={{ fontSize: size, color }}>
+    <Text style={{ fontSize: size, color }}>
       {icons[name] || '?'}
-    </span>
+    </Text>
   );
 };
 
@@ -177,7 +179,23 @@ export const AppNavigator = () => {
         <RootStack.Screen name="Onboarding" component={OnboardingScreen} />
         <RootStack.Screen name="Auth" component={AuthNavigator} />
         <RootStack.Screen name="Main" component={MainNavigator} />
+        <RootStack.Screen name="TourDetails" component={TourDetailsScreen} />
+        <RootStack.Screen name="BookingDetails" component={BookingDetailsPlaceholder} />
+        <RootStack.Screen name="DestinationDetails" component={DestinationDetailsPlaceholder} />
       </RootStack.Navigator>
     </NavigationContainer>
   );
 };
+
+// Simple placeholders to avoid navigation errors until implemented
+const BookingDetailsPlaceholder: React.FC = () => (
+  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <Text>Booking Details - Coming Soon</Text>
+  </View>
+);
+
+const DestinationDetailsPlaceholder: React.FC = () => (
+  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <Text>Destination Details - Coming Soon</Text>
+  </View>
+);
